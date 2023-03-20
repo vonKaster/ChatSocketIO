@@ -1,6 +1,6 @@
 import { io } from 'socket.io-client';
 
-class SocketioService {
+class SocketIOService {
   socket;
   constructor() {}
 
@@ -20,4 +20,4 @@ class SocketioService {
   }
 }
 
-export default new SocketioService();
+export default new SocketIOService();
