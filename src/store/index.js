@@ -1,7 +1,7 @@
 import Vue from "vue";
 import Vuex from "vuex";
 import {
-  db,
+  database,
   auth,
   GoogleAuthProvider,
   FacebookAuthProvider,
@@ -17,6 +17,7 @@ export default new Vuex.Store({
     error: null,
     success: null,
     loader: false,
+    onlineUsers: [],
   },
   getters: {},
   mutations: {
@@ -28,6 +29,9 @@ export default new Vuex.Store({
     },
     setSuccess(state, payload) {
       state.success = payload;
+    },
+    setOnlineUsers(state, users) {
+      state.onlineUsers = users;
     },
   },
   actions: {
@@ -131,6 +135,19 @@ export default new Vuex.Store({
           commit("setError", error.code);
         });
     },
+    async listenToOnlineUsers({ commit }) {
+      await database.ref("users").on("value", (snapshot) => {
+        const users = [];
+        snapshot.forEach((childSnapshot) => {
+          const user = childSnapshot.val();
+          if (user.online) {
+            users.push(user);
+          }
+        });
+        commit("setOnlineUsers", users);
+      });
+    },
+    
   },
   modules: {},
   getters: {

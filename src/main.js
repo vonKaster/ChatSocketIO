@@ -1,11 +1,11 @@
-import Vue from 'vue'
-import App from './App.vue'
-import router from './router'
-import store from './store'
+import Vue from "vue";
+import App from "./App.vue";
+import router from "./router";
+import store from "./store";
 import VueMeta from "vue-meta";
-import { auth } from "./firebase";
-import Vuelidate from 'vuelidate'
-import vuetify from './plugins/vuetify'
+import { auth, database } from "./firebase";
+import Vuelidate from "vuelidate";
+import vuetify from "./plugins/vuetify";
 
 Vue.use(VueMeta);
 Vue.use(Vuelidate);
@@ -19,8 +19,17 @@ auth.onAuthStateChanged((user) => {
       email: user.email,
       uid: user.uid,
       photosrc: user.photoURL,
-      provider: user.providerData[0].providerId
+      provider: user.providerData[0].providerId,
     };
+    const userRef = database.ref(`users/${user.uid}`);
+    userRef.set({
+      uid: user.uid,
+      name: user.displayName,
+      email: user.email,
+      online: true,
+    });
+    userRef.onDisconnect().set({ uid: user.uid, name: user.displayName, email: user.email, online: false });
+    store.dispatch("listenToOnlineUsers");
     store.dispatch("detectUser", detectedUser);
   } else {
     store.dispatch("detectUser", user);
@@ -30,6 +39,6 @@ auth.onAuthStateChanged((user) => {
     router,
     store,
     vuetify,
-    render: (h) => h(App)
+    render: (h) => h(App),
   }).$mount("#app");
 });

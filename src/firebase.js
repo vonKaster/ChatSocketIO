@@ -2,6 +2,8 @@ import firebase from "firebase/app";
 import "firebase/firestore";
 import "firebase/auth";
 import "firebase/storage";
+import "firebase/database";
+
 
 const firebaseConfig = {
   apiKey: "AIzaSyAT9x_0nBk0_XXN7-A_o6T0YGCLdKwDxmc",
@@ -22,6 +24,7 @@ const storage = firebase.storage();
 const GoogleAuthProvider = firebase.auth.GoogleAuthProvider;
 const FacebookAuthProvider = firebase.auth.FacebookAuthProvider;
 const GithubAuthProvider = firebase.auth.GithubAuthProvider;
+const database = firebase.database(); // instancia de Realtime Database
 
 export {
   db,
@@ -30,4 +33,5 @@ export {
   GoogleAuthProvider,
   FacebookAuthProvider,
   GithubAuthProvider,
+  database
 };
