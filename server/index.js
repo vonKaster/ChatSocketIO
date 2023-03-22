@@ -1,34 +1,55 @@
-const app = require('express')();
-const http = require('http').createServer(app);
-const io = require("socket.io")(http, {
-	cors: {
-		origins: [
-			"http://localhost:8080",
-		],
-	},
+const express = require('express');
+const http = require('http');
+const socketIo = require('socket.io');
+
+
+const port = process.env.PORT || 3000;
+const app = express();
+
+const server = http.createServer(app);
+let messages = []; // Creamos un arreglo vacío para almacenar los mensajes
+
+const io = socketIo(server, {
+  cors: {
+    origin: '*',
+  }
 });
 
-io.use((socket, next) => {
-  const token = socket.handshake.auth.token;
-  console.log('token', token);
-  next();
-});
-
-app.get('/', (req, res) => {
-  res.send('<h1>Hey Socket.io</h1>');
-});
+let interval;
 
 io.on('connection', (socket) => {
-  console.log('a user connected');
+  console.log('New client connected');
+  if (interval) {
+    clearInterval(interval);
+  }
+  interval = setInterval(() => getApiAndEmit(socket), 1000);
+
+  // Enviamos los mensajes almacenados a cada socket conectado
+  socket.emit('initialMessages', messages);
+
   socket.on('disconnect', () => {
-    console.log('user disconnected');
+    console.log('Client disconnected');
+    clearInterval(interval);
   });
-  socket.on('my message', (msg) => {
-    console.log('message: ' + msg);
-    io.emit('my broadcast', `server: ${msg}`);
+
+  socket.on('sendMessage', (message) => {
+    console.log('Mensaje recibido: ', message);
+    messages.push(message); // Agregar el mensaje a la lista de mensajes
+    // Emitir el mensaje recibido a todos los clientes conectados
+    io.emit('newMessage', message);
   });
+
+  socket.on("getInitialMessages", (callback) => {
+    callback(messages);
+  });
+  
+  
+
 });
 
-http.listen(3000, () => {
-  console.log('listening on *:3000');
-});
+const getApiAndEmit = (socket) => {
+  const response = new Date();
+  socket.emit('FromAPI', response);
+};
+
+server.listen(port, () => console.log(`Listening on port ${port}`));
