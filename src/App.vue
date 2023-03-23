@@ -27,7 +27,7 @@ export default {
 }
 
 .v-messages__message {
-  color: #e6105b;
+  color: #3f51b5;
   font-size: 0.75rem !important;
   font-weight: 500!important;
   line-height: 2rem!important;
@@ -37,6 +37,6 @@ export default {
 }
 
 .v-input__icon ::before {
-  color: #e6105b !important;
+  color: #3f51b5 !important;
 }
 </style>

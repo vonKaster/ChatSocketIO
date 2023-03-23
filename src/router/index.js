@@ -1,8 +1,9 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+import ChatView from '../views/ChatView.vue'
 import RegisterView from "../views/RegisterView.vue";
 import LoginView from "../views/LoginView.vue";
+import ProfileView from "../views/ProfileView.vue";
 import { auth } from "../firebase";
 
 Vue.use(VueRouter)
@@ -10,12 +11,12 @@ Vue.use(VueRouter)
 const routes = [
   {
     path: "/",
-    redirect: { name: "home" }
+    redirect: { name: "chat" }
   },
   {
-    path: "/home",
-    name: "home",
-    component: HomeView,
+    path: "/chat",
+    name: "chat",
+    component: ChatView,
     meta: { requiresAuth: true },
   },
   {
@@ -29,6 +30,12 @@ const routes = [
     name: "login",
     component: LoginView,
     meta: { background: true },
+  },
+  {
+    path: "/profile",
+    name: "profile",
+    component: ProfileView,
+    meta: { requiresAuth: true },
   },
 ]
 

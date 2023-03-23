@@ -8,6 +8,7 @@ import {
   GithubAuthProvider,
 } from "../firebase";
 import router from "@/router";
+import moment from "moment";
 
 Vue.use(Vuex);
 
@@ -96,11 +97,18 @@ export default new Vuex.Store({
         });
     },
 
-    signOut({ commit }) {
+    signOut({ commit, state }) {
+      const user = state.user; // Obtener el usuario que se está deslogueando
       auth.signOut().then(() => {
+        // Actualizar el valor de online del usuario a false en la base de datos
+        database.ref(`users/${user.uid}`).update({
+          online: false,
+          lastSeen: moment().format("MMM Do YY, h:mm a")
+        });
         router.push("/login");
       });
     },
+    
     detectUser({ commit }, user) {
       commit("setUser", user);
     },
@@ -140,14 +148,11 @@ export default new Vuex.Store({
         const users = [];
         snapshot.forEach((childSnapshot) => {
           const user = childSnapshot.val();
-          if (user.online) {
             users.push(user);
-          }
         });
         commit("setOnlineUsers", users);
       });
     },
-    
   },
   modules: {},
   getters: {

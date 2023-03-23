@@ -14,7 +14,7 @@
           "
         >
           <v-text-field
-            color="#e6105b"
+            color="#3f51b5"
             append-icon="mdi-email"
             outlined
             type="email"
@@ -25,7 +25,7 @@
             :error-messages="emailErrors"
           />
           <v-text-field
-            color="#e6105b"
+            color="#3f51b5"
             append-icon="mdi-account"
             outlined
             type="text"
@@ -37,7 +37,7 @@
           />
           <div class="d-flex">
             <v-text-field
-              color="#e6105b"
+              color="#3f51b5"
               append-icon="mdi-lock"
               outlined
               :type="showPassword ? 'text' : 'password'"
@@ -50,7 +50,7 @@
             <v-btn
               icon
               @click="showPassword = !showPassword"
-              :color="showPassword ? '#e6105b' : undefined"
+              :color="showPassword ? '#3f51b5' : undefined"
               class="ml-2 mt-2"
             >
               <v-icon>{{ showPassword ? "mdi-eye-off" : "mdi-eye" }}</v-icon>
@@ -58,7 +58,7 @@
           </div>
           <div class="d-flex">
             <v-text-field
-              color="#e6105b"
+              color="#3f51b5"
               append-icon="mdi-lock-check"
               outlined
               :type="showPasswordConfirm ? 'text' : 'password'"
@@ -71,7 +71,7 @@
             <v-btn
               icon
               @click="showPasswordConfirm = !showPasswordConfirm"
-              :color="showPasswordConfirm ? '#e6105b' : undefined"
+              :color="showPasswordConfirm ? '#3f51b5' : undefined"
               class="ml-2 mt-2"
             >
               <v-icon>{{
@@ -82,7 +82,7 @@
           <v-btn
             class="mb-2"
             :disabled="$v.$invalid"
-            color="#e6105b"
+            color="#3f51b5"
             style="color: #ffffff"
             type="submit"
             >Registrarse</v-btn
@@ -129,7 +129,7 @@ export default {
         background-position: bottom center;
       }
     .v-footer {
-      background-color: #e6105b!important;
+      background-color: #3f51b5!important;
       color: white!important;
     }
     .v-footer .footerLink {
@@ -140,7 +140,7 @@ export default {
       box-shadow: none!important;
     }
     .theme--dark .custom-footer{
-      background-color: #e6105b!important;
+      background-color: #3f51b5!important;
       color: white!important;
     }
       @media (max-width: 600px) {

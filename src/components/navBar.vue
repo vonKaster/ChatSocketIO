@@ -75,7 +75,7 @@
         </v-list>
       </v-menu>
       <v-toolbar-items v-if="!showMenu && $vuetify.breakpoint.mdAndUp">
-        <v-btn color="black" v-if="userExists" :to="{ name: 'home' }"
+        <v-btn color="black" v-if="userExists" :to="{ name: 'chat' }"
           ><v-icon class="mr-1">mdi-message-bulleted</v-icon>Chat</v-btn
         >
         <v-btn color="black" v-if="!userExists" :to="{ name: 'login' }"
@@ -160,11 +160,11 @@ export default {
 }
 
 .v-btn:hover {
-  color: #e6105b;
+  color: #3f51b5;
 }
 
 .v-btn--active {
-  color: #e6105b !important;
+  color: #3f51b5 !important;
 }
 
 .v-btn--is-elevated {

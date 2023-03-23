@@ -13,7 +13,7 @@
           "
         >
           <v-text-field
-            color="#e6105b"
+            color="#3f51b5"
             outlined
             type="email"
             placeholder="Ingrese su correo electŕonico"
@@ -26,7 +26,7 @@
           <div class="d-flex">
             <v-text-field
               class="flex-grow-1"
-              color="#e6105b"
+              color="#3f51b5"
               outlined
               :type="showPassword ? 'text' : 'password'"
               placeholder="Ingrese su contraseña"
@@ -39,7 +39,7 @@
             <v-btn
               icon
               @click="showPassword = !showPassword"
-              :color="showPassword ? '#e6105b' : undefined"
+              :color="showPassword ? '#3f51b5' : undefined"
               class="ml-2 mt-2"
             >
               <v-icon>{{ showPassword ? "mdi-eye-off" : "mdi-eye" }}</v-icon>
@@ -48,7 +48,7 @@
           <v-btn
             :disabled="$v.$invalid"
             style="color: #ffffff"
-            color="#e6105b"
+            color="#3f51b5"
             type="submit"
             >Ingresar</v-btn
           >
@@ -83,21 +83,21 @@
               @click="signIn({ provider: 'google' })"
               x-large
               icon
-              color="#e6105b"
+              color="#3f51b5"
               ><v-icon>mdi-google</v-icon></v-btn
             >
             <v-btn
               @click="signIn({ provider: 'github' })"
               x-large
               icon
-              color="#e6105b"
+              color="#3f51b5"
               ><v-icon>mdi-github</v-icon></v-btn
             >
             <v-btn
               @click="signIn({ provider: 'facebook' })"
               x-large
               icon
-              color="#e6105b"
+              color="#3f51b5"
               ><v-icon>mdi-facebook</v-icon></v-btn
             >
           </div>
@@ -134,7 +134,7 @@ export default {
         background-position: bottom center;
       }
     .v-footer {
-      background-color: #e6105b!important;
+      background-color: #3f51b5!important;
       color: white!important;
     }
     .v-footer .footerLink {
@@ -145,7 +145,7 @@ export default {
       box-shadow: none!important;
     }
     .theme--dark .custom-footer{
-      background-color: #e6105b!important;
+      background-color: #3f51b5!important;
       color: white!important;
     }
       @media (max-width: 600px) {
