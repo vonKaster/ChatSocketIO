@@ -7,6 +7,7 @@ const app = express();
 
 const server = http.createServer(app);
 let messages = []; // Creamos un arreglo vacío para almacenar los mensajes
+let userList = [];
 
 const io = socketIo(server, {
   cors: {
@@ -26,12 +27,17 @@ io.on("connection", (socket) => {
   // Enviamos los mensajes almacenados a cada socket conectado
   socket.emit("initialMessages", messages);
 
+  socket.on('onlineUsers', (users) => {
+    console.log('Usuarios en línea recibidos desde el cliente: ', users);
+    userList = users;
+  });
+
   socket.on("disconnect", () => {
     console.log("Client disconnected");
     clearInterval(interval);
 
     // Eliminamos al usuario del registro de usuarios conectados
-    delete connectedUsers[socket.userId];
+    delete userList[socket.userId];
   });
 
   socket.on("sendMessage", (message) => {
@@ -40,7 +46,7 @@ io.on("connection", (socket) => {
 
     if (message.recipientId) {
       // Si el mensaje tiene un destinatario, lo enviamos únicamente a ese destinatario
-      io.to(connectedUsers[message.recipientId]).emit("newPrivateMessage", message);
+      io.to(userList[message.recipientId]).emit("newPrivateMessage", message);
     } else {
       // Si no tiene destinatario, lo enviamos a todos los usuarios conectados
       io.emit("newMessage", message);
@@ -53,7 +59,7 @@ io.on("connection", (socket) => {
 
   socket.on("setUserId", (userId) => {
     // Almacenamos el ID de usuario en el objeto de usuarios conectados
-    connectedUsers[userId] = socket.id;
+    userList[userId] = socket.id;
     socket.userId = userId;
   });
 });
