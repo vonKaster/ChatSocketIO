@@ -117,17 +117,19 @@ export default new Vuex.Store({
     },
 
     async listUsers(state) {
-      return new Promise(async (resolve, reject) => {
+      return new Promise((resolve, reject) => {
         try {
-          let users = await state.state.Auth.listUsers();
-          console.log("response users", users);
-          state.commit("setOnlineUsers", users);
-          resolve(true);
+          state.state.Auth.listUsers((users) => {
+            console.log("response users", users);
+            state.commit("setOnlineUsers", users);
+            resolve(true);
+          });
         } catch (error) {
           reject(error);
         }
       });
     },
+    
   },
   modules: {},
   getters: {

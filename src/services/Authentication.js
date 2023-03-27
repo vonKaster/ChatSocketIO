@@ -103,18 +103,17 @@ class Auth {
       });
   }
 
-  async listUsers() {
-    return new Promise((resolve) => {
-      database.ref("users").on("value", (snapshot) => {
-        const users = [];
-        snapshot.forEach((childSnapshot) => {
-          const user = childSnapshot.val();
-          users.push(user);
-        });
-        resolve(users);
+  async listUsers(callback) {
+    database.ref("users").on("value", (snapshot) => {
+      const users = [];
+      snapshot.forEach((childSnapshot) => {
+        const user = childSnapshot.val();
+        users.push(user);
       });
+      callback(users);
     });
   }
+  
 }
 
 export default Auth;
