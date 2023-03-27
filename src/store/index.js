@@ -1,19 +1,13 @@
 import Vue from "vue";
 import Vuex from "vuex";
-import {
-  database,
-  auth,
-  GoogleAuthProvider,
-  FacebookAuthProvider,
-  GithubAuthProvider,
-} from "../firebase";
 import router from "@/router";
-import moment from "moment";
+import Auth from "@/services/Authentication";
 
 Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
+    Auth: new Auth(),
     user: null,
     error: null,
     success: null,
@@ -36,121 +30,102 @@ export default new Vuex.Store({
     },
   },
   actions: {
-    createUser({ commit }, credentials) {
-      auth
-        .createUserWithEmailAndPassword(credentials.email, credentials.passwd)
-        .then((res) => {
-          console.log(res);
-          auth.currentUser.updateProfile({
-            displayName: credentials.name,
-            photoURL:
-              "https://raw.githubusercontent.com/vonKaster/CRUDFirebase/204e35cdc01abf6dd34869facb8badcde772b7a7/src/assets/user.jpg",
-          });
-          const createdUser = {
-            email: res.user.email,
-            uid: res.additionalUserInfo.uid,
-            photosrc: res.photoURL,
-          };
-          commit("setUser", createdUser);
-          router.push("/");
+    async createUser(state, credentials) {
+      return new Promise(async (resolve, reject) => {
+        try {
+          let createdUser = await state.state.Auth.createUser(credentials);
+          state.commit("setUser", createdUser);
+          router.push("/chat");
           location.reload();
-        })
-        .catch((err) => {
-          console.log(err);
-          commit("setError", err.code);
-        });
-    },
-    signIn({ commit }, { provider, credentials }) {
-      let authPromise = null;
-      if (provider === "email") {
-        authPromise = auth.signInWithEmailAndPassword(
-          credentials.email,
-          credentials.passwd
-        );
-      } else if (provider === "google") {
-        const provider = new GoogleAuthProvider();
-        authPromise = auth.signInWithPopup(provider);
-      } else if (provider === "facebook") {
-        const provider = new FacebookAuthProvider();
-        authPromise = auth.signInWithPopup(provider);
-      } else if (provider === "github") {
-        const provider = new GithubAuthProvider();
-        authPromise = auth.signInWithPopup(provider);
-      } else {
-        console.error("Invalid provider");
-        return;
-      }
-
-      authPromise
-        .then((res) => {
-          console.log(res);
-          const userLoggedIn = {
-            email: res.user.email,
-            uid: res.additionalUserInfo.uid,
-          };
-          commit("setUser", userLoggedIn);
-          router.push("/");
-        })
-        .catch((err) => {
-          console.log(err);
-          commit("setError", err.code);
-        });
-    },
-
-    signOut({ commit, state }) {
-      const user = state.user; // Obtener el usuario que se está deslogueando
-      auth.signOut().then(() => {
-        // Actualizar el valor de online del usuario a false en la base de datos
-        database.ref(`users/${user.uid}`).update({
-          online: false,
-          lastSeen: moment().format("MMM Do YY, h:mm a")
-        });
-        router.push("/login");
+          resolve(true);
+        } catch (error) {
+          reject(error);
+        }
       });
     },
-    
+
+    async signIn(state, { provider, credentials }) {
+      return new Promise(async (resolve, reject) => {
+        try {
+          let userLoggedIn = await state.state.Auth.signIn({
+            provider,
+            credentials,
+          });
+          console.log("STATE USER ANTES", state.state.user);
+          state.commit("setUser", userLoggedIn);
+          console.log("STATE USER", state.state.user);
+          router.push("/");
+          resolve(true);
+        } catch (error) {
+          reject(error);
+        }
+      });
+    },
+
+    async signOut(state) {
+      const user = state.state.user;
+      return new Promise(async (resolve, reject) => {
+        try {
+          console.log("user antes", user);
+          await state.state.Auth.signOut(user);
+          router.push("/login");
+          resolve(true);
+        } catch (error) {
+          reject(error);
+        }
+      });
+    },
+
     detectUser({ commit }, user) {
       commit("setUser", user);
     },
-    changeUserName({ commit }, name) {
-      if (name.length >= 3 && name.length < 24) {
-        auth.currentUser
-          .updateProfile({
-            displayName: name,
-          })
-          .then(() => {
-            commit("setSuccess", "nameSuccess");
-            commit("setError", null);
-          })
-          .catch((error) => {
-            console.log(error);
-          });
-      } else {
-        commit("setError", "nameErr");
-        console.log("hola");
-        commit("setSuccess", null);
-      }
+
+    async changeUserName(state, name) {
+      const user = state.state.user;
+      return new Promise(async (resolve, reject) => {
+        try {
+          let response = await state.state.Auth.changeUserName(name, user);
+          if (response) {
+            state.commit("setSuccess", "nameSuccess");
+            state.commit("setError", null);
+          } else {
+            state.commit("setError", "nameErr");
+            state.commit("setSuccess", null);
+          }
+          resolve(true);
+        } catch (error) {
+          reject(error);
+        }
+      });
     },
-    changePassword({ commit }, newPassword) {
-      auth.currentUser
-        .updatePassword(newPassword)
-        .then(function () {
-          commit("setError", null);
-          commit("setSuccess", "passwdSuccess");
-        })
-        .catch(function (error) {
-          console.log(error);
-          commit("setError", error.code);
-        });
+
+    async changePassword(state, passwd) {
+      return new Promise(async (resolve, reject) => {
+        try {
+          let response = await state.state.Auth.changePassword(passwd);
+          if (response === "success") {
+            state.commit("setError", null);
+            state.commit("setSuccess", "passwdSuccess");
+          } else {
+            state.commit("setError", response.code);
+          }
+          resolve(true);
+        } catch (error) {
+          reject(error);
+        }
+      });
     },
-    async listenToOnlineUsers({ commit }) {
-      await database.ref("users").on("value", (snapshot) => {
-        const users = [];
-        snapshot.forEach((childSnapshot) => {
-          const user = childSnapshot.val();
-            users.push(user);
-        });
-        commit("setOnlineUsers", users);
+
+    async listUsers(state) {
+      return new Promise(async (resolve, reject) => {
+        try {
+          let users = await state.state.Auth.listUsers();
+          console.log("response users", users);
+          state.commit("setOnlineUsers", users);
+          resolve(true);
+        } catch (error) {
+          reject(error);
+        }
       });
     },
   },

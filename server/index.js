@@ -18,7 +18,7 @@ const io = socketIo(server, {
 let interval;
 
 io.on("connection", (socket) => {
-  console.log("New client connected");
+  console.log("Nuevo usuario en línea");
   if (interval) {
     clearInterval(interval);
   }
@@ -33,7 +33,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    console.log("Client disconnected");
+    console.log("Cliente desconectado");
     clearInterval(interval);
 
     // Eliminamos al usuario del registro de usuarios conectados
@@ -69,4 +69,4 @@ const getApiAndEmit = (socket) => {
   socket.emit("FromAPI", response);
 };
 
-server.listen(port, () => console.log(`Listening on port ${port}`));
+server.listen(port, () => console.log(`Servidor iniciado, escuchando el puerto: ${port}`));

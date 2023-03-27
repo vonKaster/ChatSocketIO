@@ -35,7 +35,7 @@ auth.onAuthStateChanged((user) => {
       lastSeen: moment().format("MMM Do YY, h:mm a"), // Actualiza lastSeen con la fecha y hora de desconexión formateada
     });
     store.dispatch("detectUser", detectedUser);
-    store.dispatch("listenToOnlineUsers");
+    store.dispatch("listUsers");
   } else {
     store.dispatch("detectUser", user);
   }
