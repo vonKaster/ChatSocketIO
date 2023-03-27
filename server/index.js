@@ -27,8 +27,8 @@ io.on("connection", (socket) => {
   // Enviamos los mensajes almacenados a cada socket conectado
   socket.emit("initialMessages", messages);
 
-  socket.on('onlineUsers', (users) => {
-    console.log('Usuarios en línea recibidos desde el cliente: ', users);
+  socket.on("updateUsers", (users) => {
+    console.log("Usuarios actualizados en el servidor", users);
     userList = users;
   });
 
