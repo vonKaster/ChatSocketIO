@@ -120,7 +120,7 @@ export default {
   },
 
   created() {
-    document.title = "CRUD | Chat";
+    document.title = "SocketIO | Chat";
     moment.locale("es");
     SocketIOService.getInitialMessages((messages) => {
       this.serverMessages = messages;

@@ -165,7 +165,7 @@ export default {
   },
 
   created() {
-    document.title = "CRUD | Perfil";
+    document.title = "SocketIO | Perfil";
   },
 
   beforeDestroy() {

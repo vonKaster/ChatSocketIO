@@ -2,6 +2,7 @@ import Vue from "vue";
 import Vuex from "vuex";
 import router from "@/router";
 import Auth from "@/services/Authentication";
+import SocketIOService from "@/services/SocketIO";
 
 Vue.use(Vuex);
 

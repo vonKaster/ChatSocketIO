@@ -120,7 +120,7 @@ export default {
   },
 
   created() {
-    document.title = "MVCShop | Registro";
+    document.title = "SocketIO | Registro";
     const style = document.createElement("style");
     style.setAttribute("id", "custom-main-style");
     style.textContent = `

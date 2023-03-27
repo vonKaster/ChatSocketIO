@@ -125,7 +125,7 @@ export default {
   },
 
   created() {
-    document.title = "MVCShop | Acceso";
+    document.title = "SocketIO | Ingreso";
     const style = document.createElement("style");
     style.setAttribute("id", "custom-main-style");
     style.textContent = `
