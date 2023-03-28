@@ -62,28 +62,35 @@
                   <v-icon small>mdi-reply-all</v-icon>
                 </v-chip>
                 <div>
-                  <v-chip style="color: #ffffff" color="indigo" class="mt-2">
+                  <v-chip
+                    style="color: #ffffff"
+                    color="indigo"
+                    class="mt-2"
+                    @mouseover="hoveredMessage = message"
+                    @mouseleave="hoveredMessage = null"
+                  >
                     <v-avatar class="mr-1">
                       <img :src="message.sender_photo" />
                     </v-avatar>
                     <h4 class="mr-1">{{ message.sender_name }}:</h4>
                     {{ message.text }}
+                    <button
+                      text
+                      class="btn-reply ms-2"
+                      v-if="hoveredMessage === message"
+                      @click="selectMessage(message)"
+                    >
+                      <v-icon>mdi-reply-outline</v-icon>
+                    </button>
                   </v-chip>
-                  <button
-                    text
-                    class="btn-reply ms-2"
-                    @click="selectMessage(message)"
-                  >
-                    <v-icon>mdi-reply-outline</v-icon>
-                  </button>
                 </div>
               </div>
               <p class="caption mr-2">{{ message.timestamp }}</p>
             </div>
           </div>
 
-          <div v-if="selectedMessage.id" class="selected-message">
-            <div class="d-flex align-center">
+          <div  v-if="selectedMessage.id" class="selected-message d-flex align-center">
+            <div>
               <v-btn text @click="selectedMessage = {}"
                 ><v-icon>mdi-close</v-icon></v-btn
               >
@@ -161,6 +168,7 @@ export default {
       chatPrivateActive: false,
       recipientId: null,
       selectedMessage: {},
+      hoveredMessage: null,
     };
   },
 
@@ -259,7 +267,7 @@ export default {
   left: 0;
   top: 0;
   bottom: 0;
-  width: 260px;
+  width: 320px;
   overflow-x: hidden;
   background-color: #3f51b5;
   color: white;
