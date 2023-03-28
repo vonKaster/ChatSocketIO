@@ -35,32 +35,16 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     console.log("Cliente desconectado");
     clearInterval(interval);
-
-    // Eliminamos al usuario del registro de usuarios conectados
-    delete userList[socket.userId];
   });
 
   socket.on("sendMessage", (message) => {
     console.log("Mensaje recibido: ", message);
     messages.push(message); // Agregar el mensaje a la lista de mensajes
-
-    if (message.recipientId) {
-      // Si el mensaje tiene un destinatario, lo enviamos únicamente a ese destinatario
-      io.to(userList[message.recipientId]).emit("newPrivateMessage", message);
-    } else {
-      // Si no tiene destinatario, lo enviamos a todos los usuarios conectados
-      io.emit("newMessage", message);
-    }
+    io.emit("newMessage", message);
   });
 
   socket.on("getInitialMessages", (callback) => {
     callback(messages);
-  });
-
-  socket.on("setUserId", (userId) => {
-    // Almacenamos el ID de usuario en el objeto de usuarios conectados
-    userList[userId] = socket.id;
-    socket.userId = userId;
   });
 });
 
@@ -69,4 +53,6 @@ const getApiAndEmit = (socket) => {
   socket.emit("FromAPI", response);
 };
 
-server.listen(port, () => console.log(`Servidor iniciado, escuchando el puerto: ${port}`));
+server.listen(port, () =>
+  console.log(`Servidor iniciado, escuchando el puerto: ${port}`)
+);

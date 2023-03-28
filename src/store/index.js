@@ -28,6 +28,7 @@ export default new Vuex.Store({
     },
     setOnlineUsers(state, users) {
       state.onlineUsers = users;
+      SocketIOService.updateUserList(users); // Actualiza la lista de usuarios en el servidor
     },
   },
   actions: {

@@ -15,7 +15,7 @@
             class="mb-2 user-container"
             v-for="user in onlineUsers"
             :key="user.email"
-            @click="chatPrivateActive = !chatPrivateActive"
+            @click="openPrivateChat(user)"
           >
             <div class="d-flex flex-column">
               <div class="d-flex justify-space-between">
@@ -86,7 +86,7 @@
             </div>
           </div>
 
-          <form class="message-form" @submit.prevent="sendMessage">
+          <form class="message-form" @submit.prevent="sendMessage(true)">
             <v-text-field
               solo
               type="text"
@@ -116,6 +116,7 @@ export default {
       serverPrivateMessages: [],
       chatGlobalActive: true,
       chatPrivateActive: false,
+      recipientId: null,
     };
   },
 
@@ -124,6 +125,9 @@ export default {
     moment.locale("es");
     SocketIOService.getInitialMessages((messages) => {
       this.serverMessages = messages;
+    });
+    SocketIOService.getPrivateMessages(this.recipientId, (privateMessages) => {
+      this.serverPrivateMessages = privateMessages;
     });
     this.isLoaded = true;
   },
@@ -134,7 +138,7 @@ export default {
       this.addMessage(message);
     });
 
-    console.log("Usuarios Online: ", this.onlineUsers);
+    console.log("Usuarios: ", this.onlineUsers);
     console.log("Usuario Actual: ", this.user);
   },
 
@@ -143,18 +147,33 @@ export default {
   },
 
   methods: {
-    sendMessage() {
+    sendMessage(isPrivateChat) {
       if (this.messageText.trim() !== "") {
-        const message = {
-          sender_email: this.user.email,
-          sender_uid: this.user.uid,
-          sender_name: this.user.name,
-          sender_photo: this.user.photosrc,
-          text: this.messageText,
-          timestamp: moment().format("MMM Do YY, h:mm a"),
-        };
-        SocketIOService.sendMessage(message);
+        if (isPrivateChat) {
+          const message = {
+            sender_email: this.user.email,
+            sender_uid: this.user.uid,
+            sender_name: this.user.name,
+            sender_photo: this.user.photosrc,
+            text: this.messageText,
+            timestamp: moment().format("MMM Do YY, h:mm a"),
+            recipient_id: this.recipientId
+          };
+          SocketIOService.sendMessage(message);
+          this.messageText = "";
+        } else {
+          const message = {
+            sender_email: this.user.email,
+            sender_uid: this.user.uid,
+            sender_name: this.user.name,
+            sender_photo: this.user.photosrc,
+            text: this.messageText,
+            timestamp: moment().format("MMM Do YY, h:mm a"),
+          };
+          SocketIOService.sendMessage(message);
+        }
         this.messageText = "";
+        this.recipientId = null;
       }
     },
 
@@ -164,9 +183,9 @@ export default {
     },
 
     openPrivateChat(user) {
+      this.recipientId = user.uid;
       this.chatGlobalActive = false;
       this.chatPrivateActive = true;
-
     },
     
   },

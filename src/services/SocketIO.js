@@ -1,5 +1,4 @@
 import { io } from "socket.io-client";
-import store from "@/store/index";
 
 class SocketIOService {
   socket;
@@ -7,7 +6,6 @@ class SocketIOService {
     this.socket = io("http://localhost:3000");
     this.socket.on("connect", () => {
       console.log("Conectado al servidor de socket-io");
-      this.listUsers();
     });
   }
 
@@ -33,8 +31,7 @@ class SocketIOService {
     });
   }
 
-  listUsers() {
-    let users = store.state.onlineUsers;
+  updateUserList(users) {
     console.log("Usuarios Servicio Socket", users);
     this.socket.emit("updateUsers", users, (error) => {
       if (error) {
@@ -43,7 +40,7 @@ class SocketIOService {
         console.log("Usuarios actualizados con éxito");
       }
     });
-  }  
+  }
 
   emitMessage(message) {
     this.socket.emit("newMessage", message);
