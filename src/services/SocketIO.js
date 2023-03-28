@@ -42,6 +42,17 @@ class SocketIOService {
     });
   }
 
+  deleteMessage(id) {
+    console.log("ID del mensaje a eliminar: ", id);
+    this.socket.emit("deleteMessage", id, (error) => {
+      if (error) {
+        console.log(error);
+      } else {
+        console.log("Mensaje eliminado con éxito");
+      }
+    });
+  }  
+
   emitMessage(message) {
     this.socket.emit("newMessage", message);
   }

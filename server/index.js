@@ -44,6 +44,13 @@ io.on("connection", (socket) => {
     io.emit("newMessage", message);
   });
 
+  socket.on("deleteMessage", (id) => {
+    console.log("ID del mensaje a eliminar:", id);
+    messages = messages.filter((msg) => msg.id !== id);
+    console.log(messages);
+    io.emit("messageDeleted", id);
+  });
+
   socket.on("getInitialMessages", (callback) => {
     callback(messages);
   });

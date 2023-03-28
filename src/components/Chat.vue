@@ -63,7 +63,7 @@
                 </v-chip>
                 <div>
                   <v-chip
-                    style="color: #ffffff"
+                    style="color: #ffffff; overflow-y: auto"
                     color="indigo"
                     class="mt-2"
                     @mouseover="hoveredMessage = message"
@@ -73,7 +73,9 @@
                       <img :src="message.sender_photo" />
                     </v-avatar>
                     <h4 class="mr-1">{{ message.sender_name }}:</h4>
-                    {{ message.text }}
+                    <h4 class="font-weight-regular">
+                      {{ message.text }}
+                    </h4>
                     <button
                       text
                       class="btn-reply ms-2"
@@ -82,6 +84,14 @@
                     >
                       <v-icon>mdi-reply-outline</v-icon>
                     </button>
+                    <button
+                      text
+                      class="btn-reply ms-2"
+                      v-if="hoveredMessage === message"
+                      @click="deleteMessage(message)"
+                    >
+                      <v-icon>mdi-delete</v-icon>
+                    </button>
                   </v-chip>
                 </div>
               </div>
@@ -89,7 +99,10 @@
             </div>
           </div>
 
-          <div  v-if="selectedMessage.id" class="selected-message d-flex align-center">
+          <div
+            v-if="selectedMessage.id"
+            class="selected-message d-flex align-center"
+          >
             <div>
               <v-btn text @click="selectedMessage = {}"
                 ><v-icon>mdi-close</v-icon></v-btn
@@ -243,6 +256,10 @@ export default {
 
     selectMessage(message) {
       this.selectedMessage = message;
+    },
+
+    deleteMessage(message) {
+      SocketIOService.deleteMessage(message.id);
     },
   },
 
