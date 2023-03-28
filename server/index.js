@@ -7,6 +7,7 @@ const app = express();
 
 const server = http.createServer(app);
 let messages = []; // Creamos un arreglo vacío para almacenar los mensajes
+let privateMessages = [];
 let userList = [];
 
 const io = socketIo(server, {

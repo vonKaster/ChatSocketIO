@@ -126,9 +126,6 @@ export default {
     SocketIOService.getInitialMessages((messages) => {
       this.serverMessages = messages;
     });
-    SocketIOService.getPrivateMessages(this.recipientId, (privateMessages) => {
-      this.serverPrivateMessages = privateMessages;
-    });
     this.isLoaded = true;
   },
 
