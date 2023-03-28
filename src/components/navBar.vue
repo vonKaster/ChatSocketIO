@@ -2,7 +2,7 @@
   <div>
     <v-app-bar id="navbar" class="marginBottom" app fixed>
       <v-toolbar-title>
-        <router-link :to="{ name: 'home' }">
+        <router-link :to="{ name: 'chat' }">
           <img class="mt-4" :src="require('../assets/logodigicard.png')" />
         </router-link>
       </v-toolbar-title>

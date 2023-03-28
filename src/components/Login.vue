@@ -129,10 +129,6 @@ export default {
     const style = document.createElement("style");
     style.setAttribute("id", "custom-main-style");
     style.textContent = `
-    main {
-        background-image: url(https://svgur.com/i/qnR.svg);
-        background-position: bottom center;
-      }
     .v-footer {
       background-color: #3f51b5!important;
       color: white!important;

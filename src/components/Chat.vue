@@ -7,7 +7,10 @@
       <div class="left-panel">
         <div class="ms-4 mr-4 container-users">
           <h2 class="text-center title">charla global</h2>
-          <div class="user-container" @click="chatGlobalActive = !chatGlobalActive">
+          <div
+            class="user-container"
+            @click="chatGlobalActive = !chatGlobalActive"
+          >
             <strong>Charla #1</strong>
           </div>
           <h2 class="text-center title">usuarios</h2>
@@ -44,17 +47,55 @@
                 message.sender_uid === user.uid ? 'text-right' : 'text-left'
               "
             >
-              <v-chip style="color: #ffffff" color="indigo" class="mt-2">
-                <v-avatar class="mr-1">
-                  <img :src="message.sender_photo" />
-                </v-avatar>
-                <h4 class="mr-1">{{ message.sender_name }}:</h4>
-                {{ message.text }}
-              </v-chip>
+              <div>
+                <v-chip
+                  v-if="Object.keys(message.replyTo).length > 0"
+                  style="color: #ffffff"
+                  color="rgba(89, 114, 238, 0.3)"
+                  class="mt-2"
+                >
+                  <v-avatar class="mr-1">
+                    <img :src="message.replyTo.sender_photo" />
+                  </v-avatar>
+                  <h4 class="mr-1">{{ message.replyTo.sender_name }}:</h4>
+                  <h4 class="mr-1">{{ message.replyTo.text }}</h4>
+                  <v-icon small>mdi-reply-all</v-icon>
+                </v-chip>
+                <div>
+                  <v-chip style="color: #ffffff" color="indigo" class="mt-2">
+                    <v-avatar class="mr-1">
+                      <img :src="message.sender_photo" />
+                    </v-avatar>
+                    <h4 class="mr-1">{{ message.sender_name }}:</h4>
+                    {{ message.text }}
+                  </v-chip>
+                  <button
+                    text
+                    class="btn-reply ms-2"
+                    @click="selectMessage(message)"
+                  >
+                    <v-icon>mdi-reply-outline</v-icon>
+                  </button>
+                </div>
+              </div>
               <p class="caption mr-2">{{ message.timestamp }}</p>
             </div>
           </div>
 
+          <div v-if="selectedMessage.id" class="selected-message">
+            <div class="d-flex align-center">
+              <v-btn text @click="selectedMessage = {}"
+                ><v-icon>mdi-close</v-icon></v-btn
+              >
+              <v-chip style="color: #ffffff" color="indigo">
+                <v-avatar class="mr-1">
+                  <img :src="selectedMessage.sender_photo" />
+                </v-avatar>
+                <h4 class="mr-1">{{ selectedMessage.sender_name }}:</h4>
+                {{ selectedMessage.text }}
+              </v-chip>
+            </div>
+          </div>
           <form class="message-form" @submit.prevent="sendMessage">
             <v-text-field
               solo
@@ -62,7 +103,9 @@
               v-model="messageText"
               placeholder="Escribe un mensaje"
             />
-            <v-btn type="submit">Enviar</v-btn>
+            <v-btn text class="ms-2 mt-1" type="submit"
+              ><v-icon>mdi-send</v-icon></v-btn
+            >
           </form>
         </div>
 
@@ -96,7 +139,6 @@
             <v-btn type="submit">Enviar</v-btn>
           </form>
         </div>
-
       </div>
     </div>
   </div>
@@ -105,6 +147,7 @@
 import SocketIOService from "../services/SocketIO";
 import { mapState } from "vuex";
 import moment from "moment";
+import { v4 as uuidv4 } from "uuid";
 export default {
   name: "Home",
 
@@ -117,6 +160,7 @@ export default {
       chatGlobalActive: true,
       chatPrivateActive: false,
       recipientId: null,
+      selectedMessage: {},
     };
   },
 
@@ -148,18 +192,21 @@ export default {
       if (this.messageText.trim() !== "") {
         if (isPrivateChat) {
           const message = {
+            id: uuidv4(),
             sender_email: this.user.email,
             sender_uid: this.user.uid,
             sender_name: this.user.name,
             sender_photo: this.user.photosrc,
             text: this.messageText,
             timestamp: moment().format("MMM Do YY, h:mm a"),
-            recipient_id: this.recipientId
+            recipient_id: this.recipientId,
+            replyTo: this.selectedMessage || null, // Agregamos la referencia al mensaje seleccionado
           };
           SocketIOService.sendMessage(message);
           this.messageText = "";
         } else {
           const message = {
+            id: uuidv4(),
             sender_email: this.user.email,
             sender_uid: this.user.uid,
             sender_name: this.user.name,
@@ -171,6 +218,7 @@ export default {
         }
         this.messageText = "";
         this.recipientId = null;
+        this.selectedMessage = {}; // Limpiamos el mensaje selecciona
       }
     },
 
@@ -184,7 +232,10 @@ export default {
       this.chatGlobalActive = false;
       this.chatPrivateActive = true;
     },
-    
+
+    selectMessage(message) {
+      this.selectedMessage = message;
+    },
   },
 
   computed: {
@@ -219,14 +270,14 @@ export default {
 }
 
 .messages-container {
-  height: 60vh;
-  max-height: 60vh;
+  height: 75vh;
+  max-height: 75vh;
   overflow-y: scroll;
+  padding: 20px;
 }
 
 .message-form {
   display: flex;
-  margin-top: 20px;
 }
 
 .message-form input[type="text"] {
@@ -251,5 +302,54 @@ export default {
   background-color: #495dc4;
   border-radius: 5px;
   padding: 10px 10px 10px 10px;
+}
+
+::-webkit-scrollbar {
+  width: 3px;
+  margin-left: 16px !important;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #888;
+  border-radius: 4px;
+}
+
+.selected-message {
+  background-color: #f5f5f5;
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
+  height: 50px;
+}
+
+.theme--dark .selected-message {
+  background-color: #272727;
+}
+
+.theme--dark .v-btn {
+  color: white;
+}
+
+.theme--dark .v-btn:before {
+  background-color: #272727 !important;
+}
+
+.v-btn {
+  color: black;
+}
+
+.v-btn:hover {
+  color: #3f51b5;
+}
+
+.v-btn--active {
+  color: #3f51b5 !important;
+}
+
+.v-btn--is-elevated {
+  box-shadow: none !important;
+}
+
+.v-btn:before {
+  background-color: #ffffff !important;
 }
 </style>
