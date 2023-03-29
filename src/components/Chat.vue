@@ -15,6 +15,8 @@
               type="text"
             />
             <v-checkbox
+              class="onlineFilter"
+              color="white"
               v-model="onlineFilter"
               label="Filtrar usuarios en línea"
             />
@@ -236,6 +238,14 @@ export default {
     SocketIOService.getInitialMessages((messages) => {
       this.serverMessages = messages;
     });
+    const style = document.createElement("style");
+    style.setAttribute("id", "custom-main-style");
+    style.textContent = `
+    .onlineFilter .v-label {
+      color: white!important;
+    }
+    `;
+    document.head.appendChild(style);
     this.isLoaded = true;
   },
 
@@ -451,4 +461,5 @@ export default {
 .v-btn:before {
   background-color: #ffffff !important;
 }
+
 </style>
