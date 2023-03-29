@@ -109,6 +109,17 @@
                       <v-icon>mdi-reply-outline</v-icon>
                     </button>
                     <button
+                      class="btn-reply ms-2"
+                      v-if="
+                        hoveredMessage === message &&
+                        message.sender_uid === user.uid &&
+                        !message.wasDeleted
+                      "
+                      @click="editingMessage = message"
+                    >
+                      <v-icon>mdi-pencil</v-icon>
+                    </button>
+                    <button
                       text
                       class="btn-reply ms-2"
                       v-if="
@@ -120,17 +131,6 @@
                     >
                       <v-icon>mdi-delete</v-icon>
                     </button>
-                    <button
-                      class="btn-reply ms-2"
-                      v-if="
-                        hoveredMessage === message &&
-                        message.sender_uid === user.uid &&
-                        !message.wasDeleted
-                      "
-                      @click="editingMessage = message"
-                    >
-                      <v-icon>mdi-pencil</v-icon>
-                    </button>
                   </v-chip>
                 </div>
               </div>
@@ -140,7 +140,6 @@
               </div>
               <div v-if="editingMessage && editingMessage.id === message.id">
                 <v-form @submit.prevent="updateMessage">
-                  <v-textarea v-model="editingMessage.text"></v-textarea>
                   <v-btn class="mr-2" @click="editingMessage = null"
                     >Cancelar</v-btn
                   >

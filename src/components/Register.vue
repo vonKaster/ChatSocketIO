@@ -124,10 +124,6 @@ export default {
     const style = document.createElement("style");
     style.setAttribute("id", "custom-main-style");
     style.textContent = `
-    main {
-        background-image: url(https://svgshare.com/i/qnp.svg)!important;
-        background-position: bottom center;
-      }
     .v-footer {
       background-color: #3f51b5!important;
       color: white!important;
