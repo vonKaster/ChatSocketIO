@@ -87,8 +87,11 @@
                     <button
                       text
                       class="btn-reply ms-2"
-                      v-if="hoveredMessage === message"
-                      @click="deleteMessage(message)"
+                      v-if="
+                        hoveredMessage === message &&
+                        message.sender_uid === user.uid
+                      "
+                      @click="openDeleteDialog(message)"
                     >
                       <v-icon>mdi-delete</v-icon>
                     </button>
@@ -100,7 +103,7 @@
           </div>
 
           <div
-            v-if="selectedMessage.id"
+            v-if="selectedMessage.id && !deleteDialog"
             class="selected-message d-flex align-center"
           >
             <div>
@@ -161,6 +164,32 @@
         </div>
       </div>
     </div>
+    <v-dialog width="500px" v-model="deleteDialog" persistent>
+      <v-card class="text-center">
+        <v-form
+          @submit.prevent="
+            deleteMessage(selectedMessage);
+            deleteDialog = false;
+          "
+        >
+          <v-card-title class="headline"> Eliminar Mensaje </v-card-title>
+          <v-card-text>
+            <h3>¿Estás seguro de eliminar este mensaje?</h3>
+          </v-card-text>
+          <v-card-actions>
+            <v-btn
+              text
+              @click="
+                deleteDialog = false;
+                selectedMessage = {};
+              "
+              >Cancelar</v-btn
+            >
+            <v-btn type="submit" color="green" text>Confirmar</v-btn>
+          </v-card-actions>
+        </v-form>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 <script>
@@ -182,6 +211,7 @@ export default {
       recipientId: null,
       selectedMessage: {},
       hoveredMessage: null,
+      deleteDialog: false,
     };
   },
 
@@ -198,6 +228,9 @@ export default {
     SocketIOService.setupSocketConnection(this.user, this.addMessage);
     SocketIOService.socket.on("newMessage", (message) => {
       this.addMessage(message);
+    });
+    SocketIOService.socket.on("messageDeleted", (id) => {
+      this.messageDeleted(id);
     });
 
     console.log("Usuarios: ", this.onlineUsers);
@@ -258,8 +291,21 @@ export default {
       this.selectedMessage = message;
     },
 
+    openDeleteDialog(message) {
+      this.deleteDialog = true;
+      this.selectedMessage = message;
+    },
+
     deleteMessage(message) {
       SocketIOService.deleteMessage(message.id);
+      this.selectedMessage = {};
+    },
+
+    messageDeleted(id) {
+      const messageIndex = this.serverMessages.findIndex((m) => m.id === id);
+      if (messageIndex !== -1) {
+        this.serverMessages.splice(messageIndex, 1);
+      }
     },
   },
 

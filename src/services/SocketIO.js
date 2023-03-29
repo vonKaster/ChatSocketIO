@@ -49,6 +49,7 @@ class SocketIOService {
         console.log(error);
       } else {
         console.log("Mensaje eliminado con éxito");
+        this.socket.emit("messageDeleted", id);
       }
     });
   }  

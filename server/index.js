@@ -49,7 +49,7 @@ io.on("connection", (socket) => {
     messages = messages.filter((msg) => msg.id !== id);
     console.log(messages);
     io.emit("messageDeleted", id);
-  });
+  });  
 
   socket.on("getInitialMessages", (callback) => {
     callback(messages);
