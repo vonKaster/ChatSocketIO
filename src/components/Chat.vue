@@ -10,9 +10,13 @@
           <div>
             <v-text-field
               solo
-              label="Buscar usuario"
+              label="Buscar usuario (email o nombre)"
               v-model="searchTerm"
               type="text"
+            />
+            <v-checkbox
+              v-model="onlineFilter"
+              label="Filtrar usuarios en línea"
             />
             <v-divider class="mb-4"></v-divider>
           </div>
@@ -64,7 +68,7 @@
                 </v-chip>
                 <div>
                   <v-chip
-                    style="color: #ffffff; overflow-y: auto; min-height: 40px"
+                    style="color: #ffffff; min-height: 40px"
                     color="indigo"
                     class="mt-2"
                     @mouseover="hoveredMessage = message"
@@ -78,12 +82,26 @@
                       class="font-weight-regular"
                       style="white-space: pre-line"
                     >
-                      {{ message.text }}
+                      <div class="parent">
+                        <div class="d-flex align-items-center">
+                          <v-icon dense v-if="message.wasDeleted"
+                            >mdi-alert-box</v-icon
+                          >
+                          <h4
+                            :class="{
+                              'font-italic': message.wasDeleted,
+                              'font-weight-regular': !message.wasDeleted,
+                            }"
+                          >
+                            {{ message.text }}
+                          </h4>
+                        </div>
+                      </div>
                     </h4>
                     <button
                       text
                       class="btn-reply ms-2"
-                      v-if="hoveredMessage === message"
+                      v-if="hoveredMessage === message && !message.wasDeleted"
                       @click="selectMessage(message)"
                     >
                       <v-icon>mdi-reply-outline</v-icon>
@@ -93,7 +111,8 @@
                       class="btn-reply ms-2"
                       v-if="
                         hoveredMessage === message &&
-                        message.sender_uid === user.uid
+                        message.sender_uid === user.uid &&
+                        !message.wasDeleted
                       "
                       @click="openDeleteDialog(message)"
                     >
@@ -103,7 +122,8 @@
                       class="btn-reply ms-2"
                       v-if="
                         hoveredMessage === message &&
-                        message.sender_uid === user.uid
+                        message.sender_uid === user.uid &&
+                        !message.wasDeleted
                       "
                       @click="editingMessage = message"
                     >
@@ -206,6 +226,7 @@ export default {
       deleteDialog: false,
       searchTerm: "",
       editingMessage: null,
+      onlineFilter: false,
     };
   },
 
@@ -223,10 +244,6 @@ export default {
     SocketIOService.socket.on("newMessage", (message) => {
       this.addMessage(message);
     });
-    SocketIOService.socket.on("messageDeleted", (id) => {
-      this.messageDeleted(id);
-    });
-
     SocketIOService.socket.on("messageUpdated", (message) => {
       const index = this.serverMessages.findIndex((m) => m.id === message.id);
       if (index !== -1) {
@@ -278,14 +295,19 @@ export default {
     },
 
     deleteMessage(message) {
-      SocketIOService.deleteMessage(message.id);
+      SocketIOService.deleteMessage(message);
       this.selectedMessage = {};
     },
 
-    messageDeleted(id) {
-      const messageIndex = this.serverMessages.findIndex((m) => m.id === id);
+    messageDeleted(message) {
+      const messageIndex = this.serverMessages.findIndex(
+        (m) => m.id === message.id
+      );
       if (messageIndex !== -1) {
-        this.serverMessages.splice(messageIndex, 1);
+        this.$set(this.serverMessages, messageIndex, {
+          ...this.serverMessages[messageIndex],
+          text: "Se eliminó este mensaje",
+        });
       }
     },
 
@@ -300,7 +322,10 @@ export default {
     filteredUsers() {
       const regex = new RegExp(this.searchTerm, "i");
       return this.onlineUsers.filter((user) => {
-        return regex.test(user.name) || regex.test(user.email);
+        return (
+          (regex.test(user.name) || regex.test(user.email)) &&
+          (!this.onlineFilter || user.online)
+        );
       });
     },
   },
@@ -317,6 +342,17 @@ export default {
 </script>
 
 <style scoped>
+.parent {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.parent .d-flex {
+  display: flex;
+  align-items: center;
+}
+
 .left-panel {
   position: fixed;
   left: 0;

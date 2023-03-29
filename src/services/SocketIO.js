@@ -42,17 +42,19 @@ class SocketIOService {
     });
   }
 
-  deleteMessage(id) {
-    console.log("ID del mensaje a eliminar: ", id);
-    this.socket.emit("deleteMessage", id, (error) => {
+  deleteMessage(message) {
+    message.wasDeleted = true;
+    message.text = "Este mensaje fue eliminado por su remitente";
+    console.log("ID del mensaje a eliminar: ", message.id);
+    this.socket.emit("updateMessage", message, (error) => {
       if (error) {
         console.log(error);
       } else {
         console.log("Mensaje eliminado con éxito");
-        this.socket.emit("messageDeleted", id);
+        this.socket.emit("updateMessage", message);
       }
     });
-  }  
+  }
 
   updateMessage(message) {
     message.wasEdited = true;
@@ -63,7 +65,7 @@ class SocketIOService {
         console.log("Mensaje actualizado con éxito");
       }
     });
-  }  
+  }
 
   emitMessage(message) {
     this.socket.emit("newMessage", message);
