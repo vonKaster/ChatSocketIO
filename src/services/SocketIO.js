@@ -54,6 +54,17 @@ class SocketIOService {
     });
   }  
 
+  updateMessage(message) {
+    message.wasEdited = true;
+    this.socket.emit("updateMessage", message, (error) => {
+      if (error) {
+        console.log(error);
+      } else {
+        console.log("Mensaje actualizado con éxito");
+      }
+    });
+  }  
+
   emitMessage(message) {
     this.socket.emit("newMessage", message);
   }

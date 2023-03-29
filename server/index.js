@@ -7,7 +7,6 @@ const app = express();
 
 const server = http.createServer(app);
 let messages = []; // Creamos un arreglo vacío para almacenar los mensajes
-let privateMessages = [];
 let userList = [];
 
 const io = socketIo(server, {
@@ -49,6 +48,14 @@ io.on("connection", (socket) => {
     messages = messages.filter((msg) => msg.id !== id);
     console.log(messages);
     io.emit("messageDeleted", id);
+  });  
+
+  socket.on("updateMessage", (message) => {
+    const index = messages.findIndex((m) => m.id === message.id);
+    if (index !== -1) {
+      messages[index] = message;
+      io.emit("messageUpdated", message);
+    }
   });  
 
   socket.on("getInitialMessages", (callback) => {

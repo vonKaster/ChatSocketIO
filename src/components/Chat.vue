@@ -6,19 +6,20 @@
     <div v-if="isLoaded">
       <div class="left-panel">
         <div class="ms-4 mr-4 container-users">
-          <h2 class="text-center title">charla global</h2>
-          <div
-            class="user-container"
-            @click="chatGlobalActive = !chatGlobalActive"
-          >
-            <strong>Charla #1</strong>
-          </div>
           <h2 class="text-center title">usuarios</h2>
+          <div>
+            <v-text-field
+              solo
+              label="Buscar usuario"
+              v-model="searchTerm"
+              type="text"
+            />
+            <v-divider class="mb-4"></v-divider>
+          </div>
           <div
             class="mb-2 user-container"
-            v-for="user in onlineUsers"
+            v-for="user in filteredUsers"
             :key="user.email"
-            @click="openPrivateChat(user)"
           >
             <div class="d-flex flex-column">
               <div class="d-flex justify-space-between">
@@ -63,7 +64,7 @@
                 </v-chip>
                 <div>
                   <v-chip
-                    style="color: #ffffff; overflow-y: auto"
+                    style="color: #ffffff; overflow-y: auto; min-height: 40px"
                     color="indigo"
                     class="mt-2"
                     @mouseover="hoveredMessage = message"
@@ -73,7 +74,10 @@
                       <img :src="message.sender_photo" />
                     </v-avatar>
                     <h4 class="mr-1">{{ message.sender_name }}:</h4>
-                    <h4 class="font-weight-regular">
+                    <h4
+                      class="font-weight-regular"
+                      style="white-space: pre-line"
+                    >
                       {{ message.text }}
                     </h4>
                     <button
@@ -95,10 +99,32 @@
                     >
                       <v-icon>mdi-delete</v-icon>
                     </button>
+                    <button
+                      class="btn-reply ms-2"
+                      v-if="
+                        hoveredMessage === message &&
+                        message.sender_uid === user.uid
+                      "
+                      @click="editingMessage = message"
+                    >
+                      <v-icon>mdi-pencil</v-icon>
+                    </button>
                   </v-chip>
                 </div>
               </div>
-              <p class="caption mr-2">{{ message.timestamp }}</p>
+              <div class="d-inline-flex">
+                <p class="caption mr-2">{{ message.timestamp }}</p>
+                <p v-if="message.wasEdited" class="caption mr-2">(editado)</p>
+              </div>
+              <div v-if="editingMessage && editingMessage.id === message.id">
+                <v-form @submit.prevent="updateMessage">
+                  <v-textarea v-model="editingMessage.text"></v-textarea>
+                  <v-btn class="mr-2" @click="editingMessage = null"
+                    >Cancelar</v-btn
+                  >
+                  <v-btn type="submit">Guardar cambios</v-btn>
+                </v-form>
+              </div>
             </div>
           </div>
 
@@ -129,37 +155,6 @@
             <v-btn text class="ms-2 mt-1" type="submit"
               ><v-icon>mdi-send</v-icon></v-btn
             >
-          </form>
-        </div>
-
-        <div v-if="chatPrivateActive">
-          <div class="messages-container mt-6">
-            <div
-              v-for="message in serverPrivateMessages"
-              :key="message.id"
-              :class="
-                message.sender_uid === user.uid ? 'text-right' : 'text-left'
-              "
-            >
-              <v-chip style="color: #ffffff" color="indigo" class="mt-2">
-                <v-avatar class="mr-1">
-                  <img :src="message.sender_photo" />
-                </v-avatar>
-                <h4 class="mr-1">{{ message.sender_name }}:</h4>
-                {{ message.text }}
-              </v-chip>
-              <p class="caption mr-2">{{ message.timestamp }}</p>
-            </div>
-          </div>
-
-          <form class="message-form" @submit.prevent="sendMessage(true)">
-            <v-text-field
-              solo
-              type="text"
-              v-model="messageText"
-              placeholder="Escribe un mensaje"
-            />
-            <v-btn type="submit">Enviar</v-btn>
           </form>
         </div>
       </div>
@@ -205,13 +200,12 @@ export default {
       isLoaded: false,
       messageText: "",
       serverMessages: [],
-      serverPrivateMessages: [],
       chatGlobalActive: true,
-      chatPrivateActive: false,
-      recipientId: null,
       selectedMessage: {},
       hoveredMessage: null,
       deleteDialog: false,
+      searchTerm: "",
+      editingMessage: null,
     };
   },
 
@@ -233,6 +227,13 @@ export default {
       this.messageDeleted(id);
     });
 
+    SocketIOService.socket.on("messageUpdated", (message) => {
+      const index = this.serverMessages.findIndex((m) => m.id === message.id);
+      if (index !== -1) {
+        this.$set(this.serverMessages, index, message);
+      }
+    });
+
     console.log("Usuarios: ", this.onlineUsers);
     console.log("Usuario Actual: ", this.user);
   },
@@ -242,34 +243,20 @@ export default {
   },
 
   methods: {
-    sendMessage(isPrivateChat) {
+    sendMessage() {
       if (this.messageText.trim() !== "") {
-        if (isPrivateChat) {
-          const message = {
-            id: uuidv4(),
-            sender_email: this.user.email,
-            sender_uid: this.user.uid,
-            sender_name: this.user.name,
-            sender_photo: this.user.photosrc,
-            text: this.messageText,
-            timestamp: moment().format("MMM Do YY, h:mm a"),
-            recipient_id: this.recipientId,
-            replyTo: this.selectedMessage || null, // Agregamos la referencia al mensaje seleccionado
-          };
-          SocketIOService.sendMessage(message);
-          this.messageText = "";
-        } else {
-          const message = {
-            id: uuidv4(),
-            sender_email: this.user.email,
-            sender_uid: this.user.uid,
-            sender_name: this.user.name,
-            sender_photo: this.user.photosrc,
-            text: this.messageText,
-            timestamp: moment().format("MMM Do YY, h:mm a"),
-          };
-          SocketIOService.sendMessage(message);
-        }
+        const message = {
+          id: uuidv4(),
+          sender_email: this.user.email,
+          sender_uid: this.user.uid,
+          sender_name: this.user.name,
+          sender_photo: this.user.photosrc,
+          text: this.messageText,
+          timestamp: moment().format("MMM Do YY, h:mm a"),
+          replyTo: this.selectedMessage || null, // Agregamos la referencia al mensaje seleccionado
+        };
+
+        SocketIOService.sendMessage(message);
         this.messageText = "";
         this.recipientId = null;
         this.selectedMessage = {}; // Limpiamos el mensaje selecciona
@@ -279,12 +266,6 @@ export default {
     addMessage(message) {
       this.serverMessages.push(message);
       SocketIOService.emitMessage(message);
-    },
-
-    openPrivateChat(user) {
-      this.recipientId = user.uid;
-      this.chatGlobalActive = false;
-      this.chatPrivateActive = true;
     },
 
     selectMessage(message) {
@@ -307,10 +288,21 @@ export default {
         this.serverMessages.splice(messageIndex, 1);
       }
     },
+
+    updateMessage() {
+      SocketIOService.updateMessage(this.editingMessage);
+      this.editingMessage = null;
+    },
   },
 
   computed: {
     ...mapState(["onlineUsers", "user"]),
+    filteredUsers() {
+      const regex = new RegExp(this.searchTerm, "i");
+      return this.onlineUsers.filter((user) => {
+        return regex.test(user.name) || regex.test(user.email);
+      });
+    },
   },
 
   watch: {
@@ -366,7 +358,7 @@ export default {
 }
 
 .container-users {
-  margin-top: 30%;
+  margin-top: 25%;
 }
 
 .user-container {
